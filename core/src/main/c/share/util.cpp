@@ -1,5 +1,5 @@
 #include <jni.h>
-#include <cstdint>
+#include <stdint.h>
 #include "asmlib/asmlib.h"
 
 extern "C" {
@@ -7,19 +7,25 @@ extern "C" {
 #ifdef __APPLE__
 JNIEXPORT jlong JNICALL Java_io_questdb_std_Os_compareAndSwap
         (JNIEnv *e, jclass cl, jlong volatile ptr, jlong oldVal, jlong newVal) {
-    return __sync_val_compare_and_swap(
+    return __atomic_compare_exchange_n(
             reinterpret_cast<int64_t *>(ptr),
-            (int64_t) (oldVal),
-            (int64_t) (newVal)
+            &oldVal,
+            newVal,
+            false,
+            __ATOMIC_SEQ_CST,
+            __ATOMIC_SEQ_CST
     );
 }
 #else
 JNIEXPORT jlong JNICALL Java_io_questdb_std_Os_compareAndSwap
         (JNIEnv *e, jclass cl, jlong volatile ptr, jlong oldVal, jlong newVal) {
-    return __sync_val_compare_and_swap(
+    return __atomic_compare_exchange_n(
             reinterpret_cast<int64_t *>(ptr),
-            reinterpret_cast<int64_t>(oldVal),
-            reinterpret_cast<int64_t>(newVal)
+            &oldVal,
+            newVal,
+            false,
+            __ATOMIC_SEQ_CST,
+            __ATOMIC_SEQ_CST
     );
 }
 #endif
